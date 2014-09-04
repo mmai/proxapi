@@ -1,0 +1,29 @@
+{
+  "name": "api_quota_manager",
+  "version": "0.0.0",
+  "description": "Act as a proxy client to handle webservices API usage limitations",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mmai/api_quota_manager.git"
+  },
+  "keywords": [
+    "api",
+    "quota",
+    "limits"
+  ],
+  "author": "Henri Bourcereau",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mmai/api_quota_manager/issues"
+  },
+  "homepage": "https://github.com/mmai/api_quota_manager",
+  "devDependencies": {
+    "mocha": "~1.21.4",
+    "chai": "~1.9.1",
+    "q": "~1.0.1"
+  }
+}
