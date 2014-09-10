@@ -3,90 +3,151 @@ var expect = chai.expect;
 
 var Q = require('q');
 var AQM = require("../api_quota_manager.js");
+var api_mock = require("./api_mock.js");
 
 describe('ApiQuotaManager', function(){
-
-    //A public API mock
-    var limit = 5;
-    var call_count = 0;
-
-    function resetCount(){
-      call_count = 0;
-      setTimeout(resetCount, 5000);
-    }
-    resetCount();
-
-    var mockapi = function(nom, prenom, callback){
-      var error = null;
-      var response = "200 OK";
-      var data = "";
-      if (call_count++ > limit){
-        error = "Limit reached";
-        response = "500";
-      } else {
-        // console.log(call_count);
-        data = 'hello ' + nom +" "+prenom;
-      }
-      callback(error, data, response);
-    };
+    this.timeout(30000);
 
     //wrapper functions around the API to be used by the proxy
     var mockapi_call = function(params, proxy_callback){
-      mockapi(params.nom, params.prenom, function(error, data, response){
-          var quota = false;
+      api_mock.get(params.nom, params.prenom, function(error, data, response){
+          var status = {quota:false};
           if (response == "500" || error == "Limit reached"){
             error = null;
-            quota = true;
+            status.quota = true;
           }
-          proxy_callback(error, quota, data);
+          proxy_callback(error, data, status);
         });
     };
 
-    var manage_results = function(err, data){
-      if (err) {
-      } else {
-      }
-      return data;
-    };
-
-    //Instantiate the proxy with the wrapper functions
-    var api_proxy = new AQM({
-        call: mockapi_call,
-        callback: manage_results,
-        strategy: 'none'
-      });
-
-    // beforeEach(function(){ });
-
     it('should return a valid object', function(){
+        var api_proxy = new AQM({
+            translate: mockapi_call
+          });
+
         expect(typeof(api_proxy.call)).to.equal('function');
       });
 
     describe('call()', function(){
-        this.timeout(30000);
         it('should call the api whith all parameters', function(done){
+            var api_proxy = new AQM({
+                translate: mockapi_call
+              });
+
             var params = {nom: "john", prenom:"doe" };
 
-            mockapi(params.nom, params.prenom, function(error, data, response){
-                api_proxy.call(params).then(function(res){
+
+            api_mock.get(params.nom, params.prenom, function(error, data, response){
+                api_proxy.call(params, function(err, res, finish){
                     expect(res).to.equal(data);
+                    finish();
                     done();
-                  }).done();
+                  });
+              });
+
+            // api_mock.get(params.nom, params.prenom, function(error, data, response){
+            //     api_proxy.call(params, function(err, res){return res;}).then(function(res){
+            //         expect(res).to.equal(data);
+            //         done();
+            //       }).done();
+            //   });
+          });
+
+        it('should update retry delay', function(done){
+            var retry_delay = 3600;
+
+            var api_proxy = new AQM({
+                translate: function(params, proxy_callback){
+                  api_mock.get(params.nom, params.prenom, function(error, data, response){
+                      var status = {
+                        quota:false,
+                        retry_delay: retry_delay,
+                      };
+                      proxy_callback(error, data, status);
+                    });
+                }
+              });
+
+            api_proxy.call({nom: "john", prenom:"doe" }, function(err, res, finish){
+                var limitInfo = api_proxy.getLimitInfo();
+                expect(limitInfo.retry_delay).to.equal(retry_delay);
+                finish();
+                done();
               });
           });
 
+        it('should allow recursive async usages', function(done){
+            var retry_delay = 3600;
+
+            var api_proxy = new AQM({
+                translate: function(params, proxy_callback){
+                  api_mock.get(params.nom, params.prenom, function(error, data, response){
+                      var status = {
+                        quota:false,
+                        retry_delay: retry_delay,
+                      };
+                      proxy_callback(error, data, status);
+                    });
+                }
+              });
+
+            api_proxy.call({nom: "john", prenom:"doe" }, function(err, res, finish){
+                var limitInfo = api_proxy.getLimitInfo();
+                expect(limitInfo.retry_delay).to.equal(retry_delay);
+                finish();
+                done();
+              });
+          });
+    });
+
+    describe('strategy : retry', function(){
         it('should retry', function(done){
+            var api_proxy = new AQM({
+                translate: mockapi_call,
+                strategy: 'retry',
+                retry_delay: 2
+              });
+
           var params = {nom: "john", prenom:"doe" };
           var promises = [];
 
           for (var i=0;i<15;i++){
-            promises.push(api_proxy.call(params));
+            promises.push(api_proxy.call(params, function(err, res, finish){
+                  finish();
+                }));
           }
           Q.all(promises).then(function(results){
               expect(true);
               done();
             }).fail(function(err){
-                console.log(err)
+                expect(err).to.not.exist;
+              }).done();
+        });
+    });
+
+    describe('strategy : abort', function(){
+        it('should abort', function(done){
+            var api_proxy = new AQM({
+                translate: mockapi_call,
+                strategy: 'abort',
+                retry_delay: 2
+              });
+
+          var params = {nom: "john", prenom:"doe" };
+          var promises = [];
+          var promise;
+
+          for (var i=0;i<15;i++){
+            promise = api_proxy.call(params, function(){});
+            promise.progress(function(data){
+                expect(data.status).to.not.equal('retrying');
+              });
+            promises.push(promise);
+          }
+          Q.all(promises).then(function(results){
+              done();
+            }).fail(function(err){
+                done();
               }).done();
         });
     });
