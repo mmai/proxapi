@@ -4,14 +4,14 @@ Proxapi, a helper for accessing quota limited APIs
 What is this ? 
 --------------
 
-_Proxapi_ is a javascript library acting between your code and APIs of services like Twitter, Google ou Facebook which limit the number of requests allowed in a period of time. With it, you can set up various strategies dealing with the cases when limits are reached : send back an informative error message, wait for the end of the limited period to retry the request, etc.
+_Proxapi_ is a javascript library acting between your code and APIs of services like Twitter, Google or Facebook which limit the number of requests allowed in a period of time. With it, you can set up various strategies dealing with the cases when limits are reached : send back an informative error message, wait for the end of the limited period to retry the request, etc.
 
 How it works
 ------------
 
 Let's look at a call to the Google geocoding service. Here is a code example, without Proxapi, which displays an address coordinates if everything is ok, and an error message if usage limitations have been reached. 
 
-```
+```javascript
 var geocoder = new google.maps.Geocoder();
 geocoder.geocode({ 'address': 'Bordeaux, France' }, function(results, status) {
   if (status == google.maps.GeocoderStatus.OK) {
@@ -24,7 +24,7 @@ geocoder.geocode({ 'address': 'Bordeaux, France' }, function(results, status) {
 
 We are going to use Proxapi in order to call the API every minute if we are notified that the usage limit has been reached. Here is how we initialize and call Proxapi, the _translate_ function content is explained next.
 
-```
+```javascript
 var geocoder_proxy = new Proxapi({
   strategy: 'retry',
   retry_delay: 60, // Retrying every minute
@@ -57,7 +57,7 @@ The _translate_ function used in the initialization allows Proxapi to call the A
 
 Here is the complete code. When using other APIs, you only need to modify the sections marked "XXX needs modifications" in the _translate_ function : 
 
-```
+```javascript
 var geocoder_proxy = new Proxapi({
   strategy: 'retry',
   retry_delay: 60, //Retrying every minute
