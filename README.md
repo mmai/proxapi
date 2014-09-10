@@ -81,7 +81,7 @@ var geocoder_proxy = new Proxapi({
   }
 });
 
-geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
+geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results, done){
   if (err) {
     console.log(err);
   } else {
