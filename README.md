@@ -87,6 +87,7 @@ geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
   } else {
     console.log(results[0].geometry.location);
   }
+  done();
 });
 
 ```
