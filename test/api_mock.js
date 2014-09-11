@@ -5,7 +5,7 @@ var call_count = 0;
 
 function resetCount(){
   call_count = 0;
-  setTimeout(resetCount, 2000);
+  setTimeout(resetCount, 3000);
 }
 resetCount();
 

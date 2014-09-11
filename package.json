@@ -1,6 +1,6 @@
 {
   "name": "api_quota_manager",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "description": "Act as a proxy client to handle webservices API usage limitations",
   "main": "index.js",
   "scripts": {
@@ -26,5 +26,7 @@
     "chai": "~1.9.1",
     "q": "~1.0.1",
     "longjohn": "~0.2.4"
+  },
+  "dependencies": {
   }
 }

@@ -26,6 +26,11 @@ var twitter_proxy = new AQM({
   }
 });
 
+var showEvents = function(eventName, data){
+  if (eventName === "retrying"){
+    console.log(data);
+  }
+};
 
 function getFollowers(twitter_account, cursor){
   cursor = cursor || -1;
@@ -36,14 +41,13 @@ function getFollowers(twitter_account, cursor){
     cursor: cursor
   }
 
-  twitter_proxy.call(params, function(err, data, done){
+  twitter_proxy.call(params, function(err, data){
       if (err) {
         deferred.reject(err);
       } else {
         if (data.next_cursor_str == '0'){
           //All result pages have been fetched
           deferred.resolve(data.users);
-          done();
         } else {
           //There are more result pages to fetch
           getFollowers(twitter_account, data.next_cursor_str)
@@ -51,13 +55,10 @@ function getFollowers(twitter_account, cursor){
           .progress(function(data){ console.log(data.message); })
           .then(function(users){
               deferred.resolve(data.users.concat(users));
-              done();
             });
         }
       }
-    })
-  .progress(function(data){ console.log(data.message); })
-  .then(function(users){ deferred.resolve(users); });
+    }, showEvents);
 
   return deferred.promise;
 }

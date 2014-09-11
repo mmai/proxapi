@@ -33,18 +33,15 @@ var geocoder_proxy = new Proxapi({
         }
 };
 
-geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results, done){
+geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
   if (err) {
     console.log(err);
   } else {
     console.log(results[0].geometry.location);
   }
-  done();
 });
 
 ```
-
-Notice the mandatory _done()_ call at the last line.
 
 The _translate_ function used in the initialization allows Proxapi to call the API and to understand the results. It follows this scenario : 
  * call the API with the _params_ parameters which are the same as those given to the _Proxapi.call_ function (in our example : ``{adress: 'Bordeaux, France'}``)
@@ -81,13 +78,12 @@ var geocoder_proxy = new Proxapi({
   }
 });
 
-geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results, done){
+geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
   if (err) {
     console.log(err);
   } else {
     console.log(results[0].geometry.location);
   }
-  done();
 });
 
 ```
