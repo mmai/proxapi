@@ -10,7 +10,7 @@ describe('ApiQuotaManager', function(){
 
     //wrapper functions around the API to be used by the proxy
     var mockapi_call = function(params, proxy_callback){
-      api_mock.get(params.nom, params.prenom, function(error, data, response){
+      api_mock.get(params.name, params.page, function(error, data, response){
           var status = {quota:false};
           if (response == "500" || error == "Limit reached"){
             error = null;
@@ -34,12 +34,11 @@ describe('ApiQuotaManager', function(){
                 translate: mockapi_call
               });
 
-            var params = {nom: "john", prenom:"doe" };
+            var params = {name: "john", page:1};
 
-
-            api_mock.get(params.nom, params.prenom, function(error, data, response){
+            api_mock.get(params.name, params.page, function(error, data, response){
                 api_proxy.call(params, function(err, res, finish){
-                    expect(res).to.equal(data);
+                    expect(res).to.deep.equal(data);
                     finish();
                     done();
                   });
@@ -58,7 +57,7 @@ describe('ApiQuotaManager', function(){
 
             var api_proxy = new AQM({
                 translate: function(params, proxy_callback){
-                  api_mock.get(params.nom, params.prenom, function(error, data, response){
+                  api_mock.get(params.name, params.page, function(error, data, response){
                       var status = {
                         quota:false,
                         retry_delay: retry_delay,
@@ -68,7 +67,7 @@ describe('ApiQuotaManager', function(){
                 }
               });
 
-            api_proxy.call({nom: "john", prenom:"doe" }, function(err, res, finish){
+            api_proxy.call({name: "john", page:1}, function(err, res, finish){
                 var limitInfo = api_proxy.getLimitInfo();
                 expect(limitInfo.retry_delay).to.equal(retry_delay);
                 finish();
@@ -77,25 +76,39 @@ describe('ApiQuotaManager', function(){
           });
 
         it('should allow recursive async usages', function(done){
-            var retry_delay = 3600;
-
             var api_proxy = new AQM({
-                translate: function(params, proxy_callback){
-                  api_mock.get(params.nom, params.prenom, function(error, data, response){
-                      var status = {
-                        quota:false,
-                        retry_delay: retry_delay,
-                      };
-                      proxy_callback(error, data, status);
-                    });
-                }
+                translate: mockapi_call,
+                strategy: 'retry',
+                retry_delay: 2
               });
 
-            api_proxy.call({nom: "john", prenom:"doe" }, function(err, res, finish){
-                var limitInfo = api_proxy.getLimitInfo();
-                expect(limitInfo.retry_delay).to.equal(retry_delay);
-                finish();
+            //A recursive function to display all pages
+            var getPages = function(name, frompage){
+              var deferred = Q.defer();
+              api_proxy.call({name: "john", page:frompage}, function(err, res, finish){
+                  if (err) {
+                    deferred.reject(err);
+                  } else {
+                    if (res.nextpage === -1){
+                      deferred.resolve([res.info]);
+                      finish();
+                    } else {
+                      getPages(name, res.nextpage).fail(deferred.reject).then(function(nextInfos){
+                          deferred.resolve([res.info].concat(nextInfos));
+                          finish();
+                        });
+                    }
+                  }
+                });
+              return deferred.promise;
+            };
+
+            getPages('john', 0).fail(function(err){
+                expect(err).to.not.exist;
                 done();
+              }).then(function(res){
+                  expect(res).to.deep.equal(["a", "b", "c", "d"]);
+                  done();
               });
           });
     });
@@ -108,7 +121,7 @@ describe('ApiQuotaManager', function(){
                 retry_delay: 2
               });
 
-          var params = {nom: "john", prenom:"doe" };
+          var params = {name: "john", page:1};
           var promises = [];
 
           for (var i=0;i<15;i++){
@@ -133,7 +146,7 @@ describe('ApiQuotaManager', function(){
                 retry_delay: 2
               });
 
-          var params = {nom: "john", prenom:"doe" };
+          var params = {name: "john", page:1};
           var promises = [];
           var promise;
 
