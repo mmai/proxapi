@@ -1,0 +1,14 @@
+{
+    "opts": {
+        "destination": "./docs/"
+    },
+    "source": {
+      "include": ["proxapi.js"]
+    },
+    "plugins": [ "plugins/markdown" ],
+    "markdown": {
+      "parser": "gfm",
+      "githubRepoName": "proxapi",
+      "githubRepoOwner": "mmai"
+    }
+}
