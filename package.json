@@ -1,6 +1,6 @@
 {
-  "name": "api_quota_manager",
-  "version": "0.2.0",
+  "name": "proxAPI",
+  "version": "0.3.0",
   "description": "Act as a proxy client to handle webservices API usage limitations",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mmai/api_quota_manager.git"
+    "url": "https://github.com/mmai/proxapi.git"
   },
   "keywords": [
     "api",
@@ -18,9 +18,9 @@
   "author": "Henri Bourcereau",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mmai/api_quota_manager/issues"
+    "url": "https://github.com/mmai/proxapi/issues"
   },
-  "homepage": "https://github.com/mmai/api_quota_manager",
+  "homepage": "https://github.com/mmai/proxapi",
   "devDependencies": {
     "mocha": "~1.21.4",
     "chai": "~1.9.1",

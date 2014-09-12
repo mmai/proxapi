@@ -3,10 +3,10 @@ var expect = chai.expect;
 var inspect = require('util').inspect;
 
 var Q = require('q');
-var AQM = require("../api_quota_manager.js");
+var ProxAPI = require("../proxapi.js");
 var api_mock = require("./api_mock.js");
 
-describe('ApiQuotaManager', function(){
+describe('ProxAPI', function(){
     this.timeout(15000);
 
     //wrapper functions around the API to be used by the proxy
@@ -22,7 +22,7 @@ describe('ApiQuotaManager', function(){
     };
 
     it('should return a valid object', function(){
-        var api_proxy = new AQM({
+        var api_proxy = new ProxAPI({
             translate: mockapi_call
           });
 
@@ -31,7 +31,7 @@ describe('ApiQuotaManager', function(){
 
     describe('call()', function(){
         it('should call the api whith all parameters', function(done){
-            var api_proxy = new AQM({
+            var api_proxy = new ProxAPI({
                 translate: mockapi_call
               });
 
@@ -49,7 +49,7 @@ describe('ApiQuotaManager', function(){
         it('should update retry delay', function(done){
             var retry_delay = 3600;
 
-            var api_proxy = new AQM({
+            var api_proxy = new ProxAPI({
                 translate: function(params, proxy_callback){
                   api_mock.get(params.name, params.page, function(error, data, response){
                       var status = {
@@ -70,7 +70,7 @@ describe('ApiQuotaManager', function(){
           });
 
         it('should allow recursive async usages', function(done){
-            var api_proxy = new AQM({
+            var api_proxy = new ProxAPI({
                 translate: mockapi_call,
                 strategy: 'retry',
                 retry_delay: 2
@@ -110,7 +110,7 @@ describe('ApiQuotaManager', function(){
 
     describe('strategy : retry', function(){
         it('should retry', function(done){
-            var api_proxy = new AQM({
+            var api_proxy = new ProxAPI({
                 translate: mockapi_call,
                 strategy: 'retry',
                 retry_delay: 2
@@ -139,7 +139,7 @@ describe('ApiQuotaManager', function(){
 
     describe('strategy : abort', function(){
         it('should abort', function(done){
-            var api_proxy = new AQM({
+            var api_proxy = new ProxAPI({
                 translate: mockapi_call,
                 strategy: 'abort',
                 retry_delay: 2

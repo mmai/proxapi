@@ -6,9 +6,9 @@ var credentials = require('./twitter_credentials.js');
 var Twit = require('twit');
 var twit = new Twit(credentials);
 
-var AQM = require("../api_quota_manager.js");
+var ProxAPI = require("../proxapi.js");
 
-var twitter_proxy = new AQM({
+var twitter_proxy = new ProxAPI({
   strategy: 'retry',
   retry_delay: 60*5,
   translate: function(params, proxy_callback){

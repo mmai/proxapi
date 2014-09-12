@@ -50,7 +50,7 @@ The _translate_ function used in the initialization allows Proxapi to call the A
  * return to Proxapi by calling _proxy\_callback_ with the following arguments:
    * _err_ : errors not associated to usage limitations
    * _results_ : API request results
-   * _aqm\_status_ : information about the request, you must set at least _aqm\_status.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
+   * _proxapi\_status_ : information about the request, you must set at least _proxapi\_status.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
 
 Here is the complete code. When using other APIs, you only need to modify the sections marked "XXX needs modifications" in the _translate_ function : 
 
@@ -61,19 +61,19 @@ var geocoder_proxy = new Proxapi({
   translate: function(params, proxy_callback){ 
     // XXX following line needs modifications (API call)
     geocoder.geocode({ 'address': params.address }, function(results, status) {
-      var aqm_status = { quota: false };
+      var proxapi_status = { quota: false };
       var err = null;
   
       // Transformation from the API response format to the proxy_callback format
       // XXX following block needs modifications
       if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-        aqm_status.quota = true;
+        proxapi_status.quota = true;
       } else if (status !== google.maps.GeocoderStatus.OK) { 
           err = status;
       }
   
       //Finally return to Proxapi
-      proxy_callback(err, results, aqm_status); 
+      proxy_callback(err, results, proxapi_status); 
     });
   }
 });
