@@ -1,6 +1,6 @@
 {
     "opts": {
-        "destination": "./docs/"
+        "destination": "./doc/"
     },
     "source": {
       "include": ["proxapi.js"]

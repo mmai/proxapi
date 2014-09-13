@@ -1,7 +1,5 @@
 'use strict';
 
-var Q = require('q');
-
 /**
  * settings.strategy possible values : 
  *   * "retry" : wait for the end of the limited period and retry

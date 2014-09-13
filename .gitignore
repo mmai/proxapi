@@ -1,2 +1,5 @@
 node_modules
 examples/twitter_credentials.js
+dist
+doc
+*.log
