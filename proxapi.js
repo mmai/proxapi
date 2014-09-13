@@ -54,8 +54,8 @@ var ProxAPI = function(settings){
  * Calls the _eventsCallback_ method if provided to notice when such cases occur.  
  * Finally calls the _callback_ function whith the API results
  *
- * @param {function} callback - Callback function called after the API call has been made
- * @param {Function} [eventsCallback] - Callback function called each time an event occurs
+ * @param {ProxAPI~callback} callback - Callback function called after the API call has been made
+ * @param {ProxAPI~eventsCallback} [eventsCallback] - Callback function called each time an event occurs
  */
 ProxAPI.prototype.call = function(params, callback, eventsCallback){
   var self = this;
@@ -83,6 +83,18 @@ ProxAPI.prototype.call = function(params, callback, eventsCallback){
       }
     });
 };
+/**
+ * @callback ProxAPI~callback
+ * @param {string} error
+ * @param {object} data - API request results
+ */
+
+/**
+ * @callback ProxAPI~eventsCallback
+ * @param {string} eventName - Name of the event (ie "retrying")
+ * @param {string} data  - Event message
+ */
+
 
 /**
  * Provides informations about the API limitations
