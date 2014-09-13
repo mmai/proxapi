@@ -3,7 +3,7 @@
         "destination": "./doc/"
     },
     "source": {
-      "include": ["proxapi.js"]
+      "include": ["proxapi.js", "README.md"]
     },
     "plugins": [ "plugins/markdown" ],
     "markdown": {

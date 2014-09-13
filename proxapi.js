@@ -87,7 +87,7 @@ ProxAPI.prototype.call = function(params, callback, eventsCallback){
 /**
  * Provides informations about the API limitations
  *
- * @return {LimitInfo} infos - Informations about the API limitations.
+ * @return {LimitInfo} infos - Informations about the API limitations {@link ProxAPI.LimitInfo}
  */
 ProxAPI.prototype.getLimitInfo = function(){
   return {

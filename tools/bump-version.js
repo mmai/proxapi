@@ -27,11 +27,7 @@ var old_version = pkg.version
 pkg.version = bump(process.argv[2], pkg.version.split('.')).join('.')
 write('package.json', JSON.stringify(pkg, null, 2))
 
-// var readme = read('README.md').replace(/<\!-- \[release:\s*(.+?)\s*\] -->[\s\S]*?<\!-- \[\/release\] -->/, function(_, s) {
-//   return '<!-- [release: ' + s + '] -->\n'
-//        + '[release]: ' + s.replace(/\$VERSION/g, pkg.version) + '\n'
-//        + '<!-- [/release] -->'
-// })
-// write('README.md', readme)
+var readme = read('README.md').replace(/proxapi-[0-9]+\.[0-9]+\.[0-9]+\./g, 'proxapi-' + pkg.version + '.');
+write('README.md', readme)
 
 console.log('Bumped from ' + old_version + ' to ' + pkg.version)

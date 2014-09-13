@@ -1,91 +1,29 @@
 Proxapi, a helper for accessing quota limited APIs
 ==================================================
 
-What is this ? 
---------------
+_Proxapi_ is a javascript library acting between your code and APIs of services like Twitter, Google or Facebook which limit the number of requests allowed in a period of time. With it, you can set up various strategies to deal with theses limits such as sending back an informative error message or waiting for the end of the limited period to retry the request.
 
-_Proxapi_ is a javascript library acting between your code and APIs of services like Twitter, Google or Facebook which limit the number of requests allowed in a period of time. With it, you can set up various strategies dealing with the cases when limits are reached : send back an informative error message, wait for the end of the limited period to retry the request, etc.
-
-How it works
+Installation
 ------------
 
-Let's look at a call to the Google geocoding service. Here is a code example, without Proxapi, which displays an address coordinates if everything is ok, and an error message if usage limitations have been reached. 
-
-```javascript
-var geocoder = new google.maps.Geocoder();
-geocoder.geocode({ 'address': 'Bordeaux, France' }, function(results, status) {
-  if (status == google.maps.GeocoderStatus.OK) {
-    console.log(results[0].geometry.location);
-  } else if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-    console.log("Error : usage limitations reached");
-  }
-});
+In the browser, include the file [dist/proxapi-0.3.4.min.js](https://github.com/mmai/proxapi/raw/master/dist/proxapi-0.0.0.min.js)
+```html
+<script src="proxapi-0.0.0.min.js"></script>
+<script type="text/javascript">
+  var proxApi = new ProxAPI(settings);
+</script>
 ```
 
-We are going to use Proxapi in order to call the API every minute if we are notified that the usage limit has been reached. Here is how we initialize and call Proxapi, the _translate_ function content is explained next.
-
-```javascript
-var geocoder_proxy = new Proxapi({
-  strategy: 'retry',
-  retry_delay: 60, // Retrying every minute
-  translate: function(params, proxy_callback){
-        //...
-        }
-};
-
-geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
-  if (err) {
-    console.log(err);
-  } else {
-    console.log(results[0].geometry.location);
-  }
-});
-
+In node, install the npm package with `npm install proxapi`, then : 
+```
+var ProxAPI = require("proxapi");
+var proxApi = new ProxAPI(settings);
 ```
 
-The _translate_ function used in the initialization allows Proxapi to call the API and to understand the results. It follows this scenario : 
- * call the API with the _params_ parameters which are the same as those given to the _Proxapi.call_ function (in our example : ``{adress: 'Bordeaux, France'}``)
- * get the results
- * catch errors and detect quota limits
- * return to Proxapi by calling _proxy\_callback_ with the following arguments:
-   * _err_ : errors not associated to usage limitations
-   * _results_ : API request results
-   * _proxapi\_status_ : information about the request, you must set at least _proxapi\_status.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
+Usage
+-----
 
-Here is the complete code. When using other APIs, you only need to modify the sections marked "XXX needs modifications" in the _translate_ function : 
+There is an introductory tutorial in the [wiki](https://github.com/mmai/proxapi/wiki).
+Check the [generated documentation](https://github.com/mmai/proxapi/wiki) for a complete reference of ProxAPI settings options and methods.
+Check as well the code source [examples/](https://github.com/mmai/examples) folder.
 
-```javascript
-var geocoder_proxy = new Proxapi({
-  strategy: 'retry',
-  retry_delay: 60, //Retrying every minute
-  translate: function(params, proxy_callback){ 
-    // XXX following line needs modifications (API call)
-    geocoder.geocode({ 'address': params.address }, function(results, status) {
-      var proxapi_status = { quota: false };
-      var err = null;
-  
-      // Transformation from the API response format to the proxy_callback format
-      // XXX following block needs modifications
-      if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-        proxapi_status.quota = true;
-      } else if (status !== google.maps.GeocoderStatus.OK) { 
-          err = status;
-      }
-  
-      //Finally return to Proxapi
-      proxy_callback(err, results, proxapi_status); 
-    });
-  }
-});
-
-geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
-  if (err) {
-    console.log(err);
-  } else {
-    console.log(results[0].geometry.location);
-  }
-});
-
-```
-
-Look in the _examples/_ directory for more complete concrete examples.

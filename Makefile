@@ -4,9 +4,11 @@ clean:
 	rm -rf dist/*
 doc: 
 	jsdoc --configure jsdoc.json
-dist:
-	uglifyjs proxapi.js > dist/proxapi-$(VERSION).min.js
-	cp proxapi.js dist/proxapi-$(VERSION).js
+browser:
+	browserify proxapi.js > dist/proxapi.js
+dist: browser
+	cp dist/proxapi.js dist/proxapi-$(VERSION).js
+	uglifyjs dist/proxapi.js > dist/proxapi-$(VERSION).min.js
 
 bump:
 	node tools/bump-version.js $$VERSION_BUMP
@@ -15,4 +17,4 @@ bump-feature:
 bump-major:
 	VERSION_BUMP=MAJOR $(MAKE) bump
 
-.PHONY: docs, dist
+.PHONY: doc dist
