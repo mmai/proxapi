@@ -3,7 +3,7 @@ _Proxapi_ is a javascript library acting as a proxy between your code and APIs o
 Installation
 ------------
 
-In the browser, include the file [dist/proxapi-0.3.1.min.js](https://github.com/mmai/proxapi/raw/master/dist/proxapi-0.3.1.min.js)
+In the browser, include the file [proxapi-0.3.1.min.js](http://mmai.github.io/proxapi/dist/proxapi-0.3.1.min.js)
 ```html
 <script src="proxapi-0.3.1.min.js"></script>
 <script type="text/javascript">
