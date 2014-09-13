@@ -2,8 +2,13 @@ VERSION = $(shell node -e 'console.log(require("./package.json").version)')
 
 clean:
 	rm -rf dist/*
-doc: 
+makedoc: 
 	jsdoc --configure jsdoc.json
+doc: makedoc
+	cd doc; \
+	git add --ignore-errors *; \
+	git commit -am"update doc";\
+	git push
 browser:
 	browserify proxapi.js > dist/proxapi.js
 dist: browser
