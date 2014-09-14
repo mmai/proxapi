@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/mmai/proxapi.svg?branch=master)](https://travis-ci.org/mmai/proxapi)
+
 _Proxapi_ is a javascript library acting as a proxy between your code and APIs of services like Twitter, Google or Facebook which limit the number of requests allowed in a period of time. With it, you can set up various strategies to deal with theses limits such as sending back an informative error message or waiting for the end of the limited period to retry the request.
 
 Installation
