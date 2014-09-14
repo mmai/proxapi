@@ -2,11 +2,7 @@
 'use strict';
 
 /**
- * settings.strategy possible values : 
- *   * "retry" : wait for the end of the limited period and retry
- *   * "abort" : abort the request and return an informative error message
- *
- * The settings.translate function must have the following structure :  
+ * Initialize an instance of ProxAPI with a strategy, a optional retry delay setting and a _translate_ function which must have the following structure :  
  *
  *     function(params, proxy_callback){ 
  *       // Modify the following line to call the desired API 
@@ -22,8 +18,8 @@
  *       });
  *     }
  *
- *  This function follows this scenario : 
- *  * call the API with the _params_ parameters 
+ *  Here is what this function do : 
+ *  * call the API with parmaters collected in _params_ object
  *  * get the results
  *  * catch errors and detect quota limits
  *  * return to ProxAPI by calling _proxy\_callback_ with the following arguments:
@@ -34,7 +30,9 @@
  * @namespace
  * @constructor
  * @param {object} settings - Settings of the proxy
- * @param {string} settings.strategy - Strategy to apply when a quota limit is reached
+ * @param {string} settings.strategy - Strategy to apply when a quota limit is reached. Possible values : 
+ *   * "retry" : wait for the end of the limited period and retry
+ *   * "abort" : abort the request and return an informative error message
  * @param {integer} settings.retry_delay - Retry delay in seconds
  * @param {function} settings.translate - Interface beetween ProxAPI and the API, allowing ProxAPI to call the API and to understand the results.  
  */
