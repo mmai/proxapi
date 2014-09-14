@@ -3,6 +3,12 @@ _Proxapi_ is a javascript library acting as a proxy between your code and APIs o
 Installation
 ------------
 
+In node, install the npm package with `npm install proxapi`, you can then initialize a ProxAPI instance with : 
+```
+var ProxAPI = require("proxapi");
+var proxApi = new ProxAPI(settings);
+```
+
 In the browser, include the file [proxapi-0.3.1.min.js](http://mmai.github.io/proxapi/dist/proxapi-0.3.1.min.js)
 ```html
 <script src="proxapi-0.3.1.min.js"></script>
@@ -11,16 +17,11 @@ In the browser, include the file [proxapi-0.3.1.min.js](http://mmai.github.io/pr
 </script>
 ```
 
-In node, install the npm package with `npm install proxapi`, then : 
-```
-var ProxAPI = require("proxapi");
-var proxApi = new ProxAPI(settings);
-```
 
 Usage
 -----
 
-There is an introductory tutorial [here](tutorial.md).
+There is an introductory tutorial [here](http://github.com/mmai/proxapi/blob/master/tutorial.md).
 Check the [generated documentation](http://mmai.github.io/proxapi/ProxAPI.html) for a complete reference of ProxAPI settings options and methods.
-Check as well the code source [examples/](examples/) folder.
+Check as well the source code [examples/](http://github.com/mmai/proxapi/tree/master/examples/) folder.
 
