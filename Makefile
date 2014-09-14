@@ -19,5 +19,7 @@ bump-feature:
 	VERSION_BUMP=FEATURE $(MAKE) bump
 bump-major:
 	VERSION_BUMP=MAJOR $(MAKE) bump
+publish:
+	npm publish .
 
 .PHONY: doc dist
