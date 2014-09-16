@@ -3,17 +3,17 @@
 /**
  * Initialize an instance of ProxAPI with a strategy, an optional retry delay and a _translate_ function which must have the following structure :  
  *
- *     function(params, proxyCallback){ 
+ *     function(params, handleResults){ 
  *       // Modify the following line to call the desired API 
  *       some_api.some_request(some_parameters, function(some_return_values) {
  *         var proxapiStatus = { quota: false };
  *         var err = null;
  *      
- *         // Transformation from the API response format to the proxy_callback format
+ *         // Transformation from the API response format to the handleResults format
  *         // Do something here with the API return values and compute _err_, _results_ and _proxapiStatus_
  *      
  *         //Finally return to ProxAPI
- *         proxyCallback(err, results, proxapiStatus); 
+ *         handleResults(err, results, proxapiStatus); 
  *       });
  *     }
  *
@@ -21,7 +21,7 @@
  *  * calls the API with parmaters collected in _params_ object
  *  * gets the results
  *  * catch errors and detect quota limits
- *  * returns to ProxAPI by calling _proxy\_callback_ with the following arguments:
+ *  * returns to ProxAPI by calling _handleResults_ with the following arguments:
  *    * _err_ : errors not associated to usage limitations
  *    * _results_ : API request results
  *    * _proxapiStatus_ : information about the request, you must set at least _proxapiStatus.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
@@ -49,17 +49,17 @@ var ProxAPI = function(settings){
 
 /**
  * Calls the API and apply the strategy defined at the ProxAPI initialization if it encounter a quota limit.  
- * Calls the _eventsCallback_ method if provided to notice when such cases occur.  
- * Finally calls the _callback_ function whith the API results
+ * Calls the _onEvent_ method if provided to notice when such cases occur.  
+ * Finally calls the _onEnd_ function whith the API results
  *
- * @param {ProxAPI~callback} callback - Callback function called after the API call has been made
- * @param {ProxAPI~eventsCallback} [eventsCallback] - Callback function called each time an event occurs
+ * @param {ProxAPI~onEnd} onEnd - Callback function called after the API call has been made
+ * @param {ProxAPI~onEvent} [onEvent] - Callback function called each time an event occurs
  */
-ProxAPI.prototype.call = function(params, callback, eventsCallback){
+ProxAPI.prototype.call = function(params, onEnd, onEvent){
   var self = this;
   this.apiCall(params, function(error, data, status){
       if (error){
-        callback(error, null);
+        onEnd(error, null);
       } else {
         if (status.retryDelay){
           self.retryDelay = status.retryDelay * 1000;
@@ -68,27 +68,27 @@ ProxAPI.prototype.call = function(params, callback, eventsCallback){
         if (status.quota){
           if (self.strategy == "retry"){
             var message = 'Rate limit reached. Retrying in ' + Math.ceil(self.retryDelay/1000) + ' seconds';
-            if (eventsCallback) eventsCallback('retrying', message);
+            if (onEvent) onEvent('retrying', message);
             setTimeout(function(){
-                self.call(params, callback);
+                self.call(params, onEnd);
               }, self.retryDelay);
           } else {
-            callback("Rate limit exceeded", null);
+            onEnd("Rate limit exceeded", null);
           }
         } else {
-          callback(error, data);
+          onEnd(error, data);
         }
       }
     });
 };
 /**
- * @callback ProxAPI~callback
+ * @callback ProxAPI~onEnd
  * @param {string} error
  * @param {object} data - API request results
  */
 
 /**
- * @callback ProxAPI~eventsCallback
+ * @callback ProxAPI~onEvent
  * @param {string} eventName - Name of the event (ie "retrying")
  * @param {string} data  - Event message
  */

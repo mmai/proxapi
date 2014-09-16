@@ -10,14 +10,14 @@ describe('ProxAPI', function(){
     this.timeout(15000);
 
     //wrapper functions around the API to be used by the proxy
-    var mockapiCall = function(params, proxyCallback){
+    var mockapiCall = function(params, handleResults){
       apiMock.get(params.name, params.page, function(error, data, response){
           var status = {quota:false};
           if (response == "500" || error == "Limit reached"){
             error = null;
             status.quota = true;
           }
-          proxyCallback(error, data, status);
+          handleResults(error, data, status);
         });
     };
 
@@ -50,13 +50,13 @@ describe('ProxAPI', function(){
             var retryDelay = 3600;
 
             var apiProxy = new ProxAPI({
-                translate: function(params, proxyCallback){
+                translate: function(params, handleResults){
                   apiMock.get(params.name, params.page, function(error, data, response){
                       var status = {
                         quota:false,
                         retryDelay: retryDelay,
                       };
-                      proxyCallback(error, data, status);
+                      handleResults(error, data, status);
                     });
                 }
               });

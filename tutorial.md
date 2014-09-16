@@ -20,7 +20,7 @@ We are going to use Proxapi in order to call the API every minute if we are noti
 var geocoderProxy = new Proxapi({
   strategy: 'retry',
   retryDelay: 60, // Retrying every minute
-  translate: function(params, proxyCallback){
+  translate: function(params, handleResults){
         //...
         }
 };
@@ -39,7 +39,7 @@ The _translate_ function used in the initialization allows Proxapi to call the A
  * call the API with the _params_ parameters which are the same as those given to the _Proxapi.call_ function (in our example : ``{adress: 'Bordeaux, France'}``)
  * get the results
  * catch errors and detect quota limits
- * return to Proxapi by calling _proxyCallback_ with the following arguments:
+ * return to Proxapi by calling _handleResults_ with the following arguments:
    * _err_ : errors not associated to usage limitations
    * _results_ : API request results
    * _proxapiStatus_ : information about the request, you must set at least _proxapiStatus.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
@@ -50,13 +50,13 @@ Here is the complete code. When using other APIs, you only need to modify the se
 var geocoderProxy = new Proxapi({
   strategy: 'retry',
   retryDelay: 60, //Retrying every minute
-  translate: function(params, proxyCallback){ 
+  translate: function(params, handleResults){ 
     // XXX following line needs modifications (API call)
     geocoder.geocode({ 'address': params.address }, function(results, status) {
       var proxapiStatus = { quota: false };
       var err = null;
   
-      // Transformation from the API response format to the proxyCallback format
+      // Transformation from the API response format to the handleResults format
       // XXX following block needs modifications
       if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
         proxapiStatus.quota = true;
@@ -65,7 +65,7 @@ var geocoderProxy = new Proxapi({
       }
   
       //Finally return to Proxapi
-      proxyCallback(err, results, proxapiStatus); 
+      handleResults(err, results, proxapiStatus); 
     });
   }
 });

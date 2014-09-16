@@ -11,7 +11,7 @@ var ProxAPI = require("../proxapi.js");
 var twitterProxy = new ProxAPI({
   strategy: 'retry',
   retryDelay: 60*5,
-  translate: function(params, proxyCallback){
+  translate: function(params, handleResults){
     twit.get("followers/list", {screen_name: params.twitter_account, count: 50, cursor: params.cursor}, function (err, data, response) {
         var status = {
           quota: false
@@ -21,7 +21,7 @@ var twitterProxy = new ProxAPI({
           status.quota = true;
           status.retryDelay = response.headers['x-rate-limit-reset'] - (Date.now()/1000) ;
         }
-        proxyCallback(err, data, status);
+        handleResults(err, data, status);
       });
   }
 });
