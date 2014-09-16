@@ -17,15 +17,15 @@ geocoder.geocode({ 'address': 'Bordeaux, France' }, function(results, status) {
 We are going to use Proxapi in order to call the API every minute if we are notified that the usage limit has been reached. Here is how we initialize and call Proxapi, the _translate_ function content is explained next.
 
 ```javascript
-var geocoder_proxy = new Proxapi({
+var geocoderProxy = new Proxapi({
   strategy: 'retry',
-  retry_delay: 60, // Retrying every minute
-  translate: function(params, proxy_callback){
+  retryDelay: 60, // Retrying every minute
+  translate: function(params, proxyCallback){
         //...
         }
 };
 
-geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
+geocoderProxy.call({address: 'Bordeaux, France'}, function(err, results){
   if (err) {
     console.log(err);
   } else {
@@ -39,38 +39,38 @@ The _translate_ function used in the initialization allows Proxapi to call the A
  * call the API with the _params_ parameters which are the same as those given to the _Proxapi.call_ function (in our example : ``{adress: 'Bordeaux, France'}``)
  * get the results
  * catch errors and detect quota limits
- * return to Proxapi by calling _proxy\_callback_ with the following arguments:
+ * return to Proxapi by calling _proxyCallback_ with the following arguments:
    * _err_ : errors not associated to usage limitations
    * _results_ : API request results
-   * _proxapi\_status_ : information about the request, you must set at least _proxapi\_status.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
+   * _proxapiStatus_ : information about the request, you must set at least _proxapiStatus.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
 
 Here is the complete code. When using other APIs, you only need to modify the sections marked "XXX needs modifications" in the _translate_ function : 
 
 ```javascript
-var geocoder_proxy = new Proxapi({
+var geocoderProxy = new Proxapi({
   strategy: 'retry',
-  retry_delay: 60, //Retrying every minute
-  translate: function(params, proxy_callback){ 
+  retryDelay: 60, //Retrying every minute
+  translate: function(params, proxyCallback){ 
     // XXX following line needs modifications (API call)
     geocoder.geocode({ 'address': params.address }, function(results, status) {
-      var proxapi_status = { quota: false };
+      var proxapiStatus = { quota: false };
       var err = null;
   
-      // Transformation from the API response format to the proxy_callback format
+      // Transformation from the API response format to the proxyCallback format
       // XXX following block needs modifications
       if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT) {
-        proxapi_status.quota = true;
+        proxapiStatus.quota = true;
       } else if (status !== google.maps.GeocoderStatus.OK) { 
           err = status;
       }
   
       //Finally return to Proxapi
-      proxy_callback(err, results, proxapi_status); 
+      proxyCallback(err, results, proxapiStatus); 
     });
   }
 });
 
-geocoder_proxy.call({address: 'Bordeaux, France'}, function(err, results){
+geocoderProxy.call({address: 'Bordeaux, France'}, function(err, results){
   if (err) {
     console.log(err);
   } else {

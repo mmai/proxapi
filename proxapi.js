@@ -1,30 +1,30 @@
 'use strict';
 
 /**
- * Initialize an instance of ProxAPI with a strategy, a optional retry delay setting and a _translate_ function which must have the following structure :  
+ * Initialize an instance of ProxAPI with a strategy, an optional retry delay and a _translate_ function which must have the following structure :  
  *
- *     function(params, proxy_callback){ 
+ *     function(params, proxyCallback){ 
  *       // Modify the following line to call the desired API 
  *       some_api.some_request(some_parameters, function(some_return_values) {
- *         var proxapi_status = { quota: false };
+ *         var proxapiStatus = { quota: false };
  *         var err = null;
  *      
  *         // Transformation from the API response format to the proxy_callback format
- *         // Do something here with the API return values and compute _err_, _results_ and _proxapi\_status_
+ *         // Do something here with the API return values and compute _err_, _results_ and _proxapiStatus_
  *      
  *         //Finally return to ProxAPI
- *         proxy_callback(err, results, proxapi_status); 
+ *         proxyCallback(err, results, proxapiStatus); 
  *       });
  *     }
  *
- *  Here is what this function do : 
- *  * call the API with parmaters collected in _params_ object
- *  * get the results
+ *  This function : 
+ *  * calls the API with parmaters collected in _params_ object
+ *  * gets the results
  *  * catch errors and detect quota limits
- *  * return to ProxAPI by calling _proxy\_callback_ with the following arguments:
+ *  * returns to ProxAPI by calling _proxy\_callback_ with the following arguments:
  *    * _err_ : errors not associated to usage limitations
  *    * _results_ : API request results
- *    * _proxapi\_status_ : information about the request, you must set at least _proxapi\_status.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
+ *    * _proxapiStatus_ : information about the request, you must set at least _proxapiStatus.quota_ boolean value ( _true_ if the request failed due to usage limitations, _false_ if there wasn't any quota error).
  *
  * @namespace
  * @constructor
@@ -32,11 +32,11 @@
  * @param {string} settings.strategy - Strategy to apply when a quota limit is reached. Possible values : 
  *   * "retry" : wait for the end of the limited period and retry
  *   * "abort" : abort the request and return an informative error message
- * @param {integer} settings.retry_delay - Retry delay in seconds
+ * @param {integer} settings.retryDelay - Retry delay in seconds
  * @param {function} settings.translate - Interface beetween ProxAPI and the API, allowing ProxAPI to call the API and to understand the results.  
  */
 var ProxAPI = function(settings){
-  this.api_call = settings.translate;
+  this.apiCall = settings.translate;
   this.strategy = settings.strategy;
 
   /**
@@ -44,7 +44,7 @@ var ProxAPI = function(settings){
    * @member {integer} 
    * @default 60000
    */
-  this.retry_delay = (settings.retry_delay || 60) * 1000;
+  this.retryDelay = (settings.retryDelay || 60) * 1000;
 };
 
 /**
@@ -57,21 +57,21 @@ var ProxAPI = function(settings){
  */
 ProxAPI.prototype.call = function(params, callback, eventsCallback){
   var self = this;
-  this.api_call(params, function(error, data, status){
+  this.apiCall(params, function(error, data, status){
       if (error){
         callback(error, null);
       } else {
-        if (status.retry_delay){
-          self.retry_delay = status.retry_delay * 1000;
+        if (status.retryDelay){
+          self.retryDelay = status.retryDelay * 1000;
         }
 
         if (status.quota){
           if (self.strategy == "retry"){
-            var message = 'Rate limit reached. Retrying in ' + Math.ceil(self.retry_delay/1000) + ' seconds';
+            var message = 'Rate limit reached. Retrying in ' + Math.ceil(self.retryDelay/1000) + ' seconds';
             if (eventsCallback) eventsCallback('retrying', message);
             setTimeout(function(){
                 self.call(params, callback);
-              }, self.retry_delay);
+              }, self.retryDelay);
           } else {
             callback("Rate limit exceeded", null);
           }
@@ -101,7 +101,7 @@ ProxAPI.prototype.call = function(params, callback, eventsCallback){
  */
 ProxAPI.prototype.getLimitInfo = function(){
   return {
-    retry_delay: (this.retry_delay / 1000)
+    retryDelay: (this.retryDelay / 1000)
   };
 };
 
@@ -109,7 +109,7 @@ ProxAPI.prototype.getLimitInfo = function(){
     @memberof ProxAPI
     @typedef LimitInfo
     @type {object}
-    @property {integer} retry_delay - Number of seconds to wait before retrying a call to the API
+    @property {integer} retryDelay - Number of seconds to wait before retrying a call to the API
  */
 
 module.exports = ProxAPI;

@@ -4,41 +4,41 @@ var inspect = require('util').inspect;
 
 var Q = require('q');
 var ProxAPI = require("../proxapi.js");
-var api_mock = require("./api_mock.js");
+var apiMock = require("./api_mock.js");
 
 describe('ProxAPI', function(){
     this.timeout(15000);
 
     //wrapper functions around the API to be used by the proxy
-    var mockapi_call = function(params, proxy_callback){
-      api_mock.get(params.name, params.page, function(error, data, response){
+    var mockapiCall = function(params, proxyCallback){
+      apiMock.get(params.name, params.page, function(error, data, response){
           var status = {quota:false};
           if (response == "500" || error == "Limit reached"){
             error = null;
             status.quota = true;
           }
-          proxy_callback(error, data, status);
+          proxyCallback(error, data, status);
         });
     };
 
     it('should return a valid object', function(){
-        var api_proxy = new ProxAPI({
-            translate: mockapi_call
+        var apiProxy = new ProxAPI({
+            translate: mockapiCall
           });
 
-        expect(typeof(api_proxy.call)).to.equal('function');
+        expect(typeof(apiProxy.call)).to.equal('function');
       });
 
     describe('call()', function(){
         it('should call the api whith all parameters', function(done){
-            var api_proxy = new ProxAPI({
-                translate: mockapi_call
+            var apiProxy = new ProxAPI({
+                translate: mockapiCall
               });
 
             var params = {name: "john", page:1};
 
-            api_mock.get(params.name, params.page, function(error, data, response){
-                api_proxy.call(params, function(err, res, finish){
+            apiMock.get(params.name, params.page, function(error, data, response){
+                apiProxy.call(params, function(err, res, finish){
                     expect(res).to.deep.equal(data);
                     // finish();
                     done();
@@ -47,39 +47,39 @@ describe('ProxAPI', function(){
           });
 
         it('should update retry delay', function(done){
-            var retry_delay = 3600;
+            var retryDelay = 3600;
 
-            var api_proxy = new ProxAPI({
-                translate: function(params, proxy_callback){
-                  api_mock.get(params.name, params.page, function(error, data, response){
+            var apiProxy = new ProxAPI({
+                translate: function(params, proxyCallback){
+                  apiMock.get(params.name, params.page, function(error, data, response){
                       var status = {
                         quota:false,
-                        retry_delay: retry_delay,
+                        retryDelay: retryDelay,
                       };
-                      proxy_callback(error, data, status);
+                      proxyCallback(error, data, status);
                     });
                 }
               });
 
-            api_proxy.call({name: "john", page:1}, function(err, res, finish){
-                var limitInfo = api_proxy.getLimitInfo();
-                expect(limitInfo.retry_delay).to.equal(retry_delay);
+            apiProxy.call({name: "john", page:1}, function(err, res, finish){
+                var limitInfo = apiProxy.getLimitInfo();
+                expect(limitInfo.retryDelay).to.equal(retryDelay);
                 // finish();
                 done();
               });
           });
 
         it('should allow recursive async usages', function(done){
-            var api_proxy = new ProxAPI({
-                translate: mockapi_call,
+            var apiProxy = new ProxAPI({
+                translate: mockapiCall,
                 strategy: 'retry',
-                retry_delay: 2
+                retryDelay: 2
               });
 
             //A recursive function to display all pages
             var getPages = function(name, frompage){
               var deferred = Q.defer();
-              api_proxy.call({name: "john", page:frompage}, function(err, res, finish){
+              apiProxy.call({name: "john", page:frompage}, function(err, res, finish){
                   if (err) {
                     deferred.reject(err);
                   } else {
@@ -110,10 +110,10 @@ describe('ProxAPI', function(){
 
     describe('strategy : retry', function(){
         it('should retry', function(done){
-            var api_proxy = new ProxAPI({
-                translate: mockapi_call,
+            var apiProxy = new ProxAPI({
+                translate: mockapiCall,
                 strategy: 'retry',
-                retry_delay: 2
+                retryDelay: 2
               });
 
           var params = {name: "john", page:1};
@@ -121,7 +121,7 @@ describe('ProxAPI', function(){
           var counter = 0;
           var iterations = 15;
           for (var i=0;i<iterations;i++){
-            api_proxy.call(params, function(error, data){
+            apiProxy.call(params, function(error, data){
                 if (error) expect(error).to.not.exist;
                 counter += 1;
                 if (counter >= iterations){
@@ -139,10 +139,10 @@ describe('ProxAPI', function(){
 
     describe('strategy : abort', function(){
         it('should abort', function(done){
-            var api_proxy = new ProxAPI({
-                translate: mockapi_call,
+            var apiProxy = new ProxAPI({
+                translate: mockapiCall,
                 strategy: 'abort',
-                retry_delay: 2
+                retryDelay: 2
               });
 
           var params = {name: "john", page:1};
@@ -151,7 +151,7 @@ describe('ProxAPI', function(){
           var iterations = 15;
 
           for (var i=0;i<iterations;i++){
-            api_proxy.call(params, function(error, data){
+            apiProxy.call(params, function(error, data){
                 counter += 1;
                 if (counter >= iterations){
                   done();
