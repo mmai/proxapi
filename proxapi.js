@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Initialize an instance of ProxAPI with a strategy, an optional retry delay and a _translate_ function which must have the following structure :  
+ * Initialize an instance of ProxAPI with an optional retry delay and a _translate_ function which must have the following structure :  
  *
  *     function(params, handleResults){ 
  *       // Modify the following line to call the desired API 
@@ -29,15 +29,11 @@
  * @namespace
  * @constructor
  * @param {object} settings - Settings of the proxy
- * @param {string} settings.strategy - Strategy to apply when a quota limit is reached. Possible values : 
- *   * "retry" : wait for the end of the limited period and retry
- *   * "abort" : abort the request and return an informative error message
  * @param {integer} settings.retryDelay - Retry delay in seconds
  * @param {function} settings.translate - Interface beetween ProxAPI and the API, allowing ProxAPI to call the API and to understand the results.  
  */
 var ProxAPI = function(settings){
   this.apiCall = settings.translate;
-  this.strategy = settings.strategy;
 
   /**
    * Retry_delay Retry delay in milliseconds
@@ -48,14 +44,19 @@ var ProxAPI = function(settings){
 };
 
 /**
- * Calls the API and apply the strategy defined at the ProxAPI initialization if it encounter a quota limit.  
+ * Calls the API and apply a strategy if it encounter a quota limit.  
  * Calls the _onEvent_ method if provided to notice when such cases occur.  
  * Finally calls the _onEnd_ function whith the API results
  *
+ * @param {object} params - Parameters needed by the API calling function. The  _translate_ function is called with this same object.
+ * @param {object} options - Options
+ * @param {string} [options.strategy] - Strategy to apply when a quota limit is reached. Possible values : 
+ *   * "retry" : wait for the end of the limited period and retry
+ *   * "abort" : abort the request and return an informative error message
+ * @param {ProxAPI~onEvent} [options.onEvent] - Callback function called each time an event occurs
  * @param {ProxAPI~onEnd} onEnd - Callback function called after the API call has been made
- * @param {ProxAPI~onEvent} [onEvent] - Callback function called each time an event occurs
  */
-ProxAPI.prototype.call = function(params, onEnd, onEvent){
+ProxAPI.prototype.call = function(params, options, onEnd){
   var self = this;
   this.apiCall(params, function(error, data, status){
       if (error){
@@ -66,11 +67,11 @@ ProxAPI.prototype.call = function(params, onEnd, onEvent){
         }
 
         if (status.quota){
-          if (self.strategy == "retry"){
+          if (options.strategy == "retry"){
             var message = 'Rate limit reached. Retrying in ' + Math.ceil(self.retryDelay/1000) + ' seconds';
-            if (onEvent) onEvent('retrying', message);
+            if (options.onEvent) options.onEvent('retrying', message);
             setTimeout(function(){
-                self.call(params, onEnd);
+                self.call(params, options, onEnd);
               }, self.retryDelay);
           } else {
             onEnd("Rate limit exceeded", null);
@@ -93,6 +94,56 @@ ProxAPI.prototype.call = function(params, onEnd, onEvent){
  * @param {string} data  - Event message
  */
 
+ /**
+  * callUntil
+  *
+  * @param {object} params - Parameters needed by the API calling function. The  _translate_ function is called with this same object.
+  * @param {object} options - Options
+  * @param {string} [options.strategy] - Strategy to apply when a quota limit is reached. Possible values : 
+  *   * "retry" : wait for the end of the limited period and retry
+  *   * "abort" : abort the request and return an informative error message
+  * @param {ProxAPI~onEvent} [options.onEvent] - Callback function called each time an event occurs
+  * @param {ProxAPI~onEnd} onEnd - Callback function called after the API call has been made
+  * @param {object} callSettings - Settings for calling the API recursively
+  * @param {ProxAPI~newParams} callSettings.newParams - Callback calculating the new parameters for the next API call
+  * @param {ProxAPI~aggregate} callSettings.aggregate - Callback aggregating results of successives API calls
+  * @param {ProxAPI~endCondition} callSettings.endCondition - Callback deciding if more API calls are needed
+  * @param {object} [results] - results from preceding API calls to aggregate
+  */
+ ProxAPI.prototype.callUntil = function(params, options, onEnd, callSettings, results){
+   var self = this;
+   results = results || [];
+   this.call(params, options, function(err, data){
+     results = callSettings.aggregate(results, data);
+     params = callSettings.newParams(err, data, params);
+     if (callSettings.endCondition(err, data)){
+       onEnd(err, results);
+     } else {
+       self.callUntil(params, options, onEnd, callSettings, results);
+     }
+   });
+ };
+
+/**
+ * @callback ProxAPI~newParams
+ * @param {string} error - API request error
+ * @param {object} data - API request results
+ * @return {object} params - Parameters used for the next API call
+ */
+
+/**
+ * @callback ProxAPI~aggregate
+ * @param {string} results - results from preceding API calls
+ * @param {object} data - API request results
+ * @return {object} results - Aggregated results
+ */
+
+/**
+ * @callback ProxAPI~endCondition
+ * @param {string} error - API request error
+ * @param {object} data - API request results
+ * @return {boolean} stop - True if all results have been fetched, False if more API calls are needed
+ */
 
 /**
  * Provides informations about the API limitations

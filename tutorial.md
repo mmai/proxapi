@@ -18,14 +18,13 @@ We are going to use Proxapi in order to call the API every minute if we are noti
 
 ```javascript
 var geocoderProxy = new Proxapi({
-  strategy: 'retry',
   retryDelay: 60, // Retrying every minute
   translate: function(params, handleResults){
         //...
         }
 };
 
-geocoderProxy.call({address: 'Bordeaux, France'}, function(err, results){
+geocoderProxy.call({address: 'Bordeaux, France'}, {strategy: 'retry'}, function(err, results){
   if (err) {
     console.log(err);
   } else {
@@ -48,7 +47,6 @@ Here is the complete code. When using other APIs, you only need to modify the se
 
 ```javascript
 var geocoderProxy = new Proxapi({
-  strategy: 'retry',
   retryDelay: 60, //Retrying every minute
   translate: function(params, handleResults){ 
     // XXX following line needs modifications (API call)
@@ -70,7 +68,7 @@ var geocoderProxy = new Proxapi({
   }
 });
 
-geocoderProxy.call({address: 'Bordeaux, France'}, function(err, results){
+geocoderProxy.call({address: 'Bordeaux, France'}, {strategy: 'retry'}, function(err, results){
   if (err) {
     console.log(err);
   } else {

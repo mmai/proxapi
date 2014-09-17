@@ -38,9 +38,8 @@ describe('ProxAPI', function(){
             var params = {name: "john", page:1};
 
             apiMock.get(params.name, params.page, function(error, data, response){
-                apiProxy.call(params, function(err, res, finish){
+                apiProxy.call(params, {}, function(err, res){
                     expect(res).to.deep.equal(data);
-                    // finish();
                     done();
                   });
               });
@@ -61,10 +60,9 @@ describe('ProxAPI', function(){
                 }
               });
 
-            apiProxy.call({name: "john", page:1}, function(err, res, finish){
+            apiProxy.call({name: "john", page:1}, {strategy:"abort"},  function(err, res){
                 var limitInfo = apiProxy.getLimitInfo();
                 expect(limitInfo.retryDelay).to.equal(retryDelay);
-                // finish();
                 done();
               });
           });
@@ -72,28 +70,24 @@ describe('ProxAPI', function(){
         it('should allow recursive async usages', function(done){
             var apiProxy = new ProxAPI({
                 translate: mockapiCall,
-                strategy: 'retry',
                 retryDelay: 2
               });
 
             //A recursive function to display all pages
             var getPages = function(name, frompage){
               var deferred = Q.defer();
-              apiProxy.call({name: "john", page:frompage}, function(err, res, finish){
+              apiProxy.call({name: "john", page:frompage}, {strategy:"retry"}, function(err, res){
                   if (err) {
                     deferred.reject(err);
                   } else {
                     if (res.nextpage === -1){
                       deferred.resolve([res.info]);
-                      // finish();
                     } else {
                       getPages(name, res.nextpage).fail(deferred.reject).then(function(nextInfos){
                           deferred.resolve([res.info].concat(nextInfos));
-                          // finish();
                         });
                     }
                   }
-                // }).then(function(res){
                   });
               return deferred.promise;
             };
@@ -112,24 +106,24 @@ describe('ProxAPI', function(){
         it('should retry', function(done){
             var apiProxy = new ProxAPI({
                 translate: mockapiCall,
-                strategy: 'retry',
                 retryDelay: 2
               });
 
           var params = {name: "john", page:1};
+          var onEvent = function(eventName, data){
+            if (eventName === 'retrying'){
+              // console.log(data);
+            }
+          };
 
           var counter = 0;
           var iterations = 15;
           for (var i=0;i<iterations;i++){
-            apiProxy.call(params, function(error, data){
+            apiProxy.call(params, {strategy:"retry", onEvent: onEvent}, function(error, data){
                 if (error) expect(error).to.not.exist;
                 counter += 1;
                 if (counter >= iterations){
                   done();
-                }
-              }, function(eventName, data){
-                if (eventName === 'retrying'){
-                  // console.log(data);
                 }
               });
           }
@@ -139,31 +133,61 @@ describe('ProxAPI', function(){
 
     describe('strategy : abort', function(){
         it('should abort', function(done){
-            var apiProxy = new ProxAPI({
-                translate: mockapiCall,
-                strategy: 'abort',
-                retryDelay: 2
-              });
+          var apiProxy = new ProxAPI({
+              translate: mockapiCall,
+              retryDelay: 2
+            });
 
           var params = {name: "john", page:1};
+          var onEvent = function(eventName, data){
+            if (eventName === 'retrying'){
+              console.log("abort but retrying event : " + message);
+              expect(true).to.be.false;
+            }
+          };
 
           var counter = 0;
           var iterations = 15;
 
           for (var i=0;i<iterations;i++){
-            apiProxy.call(params, function(error, data){
+            apiProxy.call(params, {strategy:"abort", onEvent: onEvent}, function(error, data){
                 counter += 1;
                 if (counter >= iterations){
                   done();
                 }
-              }, function(eventName, data){
-                if (eventName === 'retrying'){
-                console.log("abort but retrying event : " + message);
-                expect(true).to.be.false;
-                }
               });
           }
 
+        });
+    });
+
+  describe('callUntil', function(){
+      it('should aggregate api calls results until a condition has been fulfilled', function(done){
+          var apiProxy = new ProxAPI({
+              translate: mockapiCall,
+              retryDelay: 2
+            });
+
+          var endCondition = function(error, data){
+            return data.nextpage === -1;
+          }; 
+
+          var newParams = function(error, data, params){
+            return {
+              name: params.name,
+              page: data.nextpage
+            };
+          };
+          
+          var aggregate = function(acc, res){
+            return acc.concat([res.info]);
+          };
+
+          var params = {name: "john", page:0};
+          apiProxy.callUntil(params, {strategy:"retry"}, function(error, data){
+              expect(data).to.deep.equal(["a", "b", "c", "d"]);
+              done();
+            }, {newParams: newParams, aggregate: aggregate, endCondition: endCondition });
         });
     });
 });
