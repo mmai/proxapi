@@ -47,28 +47,28 @@
 
     
     <div class="description">
-        <p>Initialize an instance of ProxAPI with a strategy, a optional retry delay setting and a <em>translate</em> function which must have the following structure :  </p>
-<pre class="prettyprint source"><code>function(params, proxy_callback){ 
+        <p>Initialize an instance of ProxAPI with an optional retry delay and a <em>translate</em> function which must have the following structure :  </p>
+<pre class="prettyprint source"><code>function(params, handleResults){ 
   // Modify the following line to call the desired API 
   some_api.some_request(some_parameters, function(some_return_values) {
-    var proxapi_status = { quota: false };
+    var proxapiStatus = { quota: false };
     var err = null;
 
-    // Transformation from the API response format to the proxy_callback format
-    // Do something here with the API return values and compute _err_, _results_ and _proxapi\_status_
+    // Transformation from the API response format to the handleResults format
+    // Do something here with the API return values and compute _err_, _results_ and _proxapiStatus_
 
     //Finally return to ProxAPI
-    proxy_callback(err, results, proxapi_status); 
+    handleResults(err, results, proxapiStatus); 
   });
-}</code></pre><p> Here is what this function do : </p>
+}</code></pre><p> This function : </p>
 <ul>
-<li>call the API with parmaters collected in <em>params</em> object</li>
-<li>get the results</li>
+<li>calls the API with parmaters collected in <em>params</em> object</li>
+<li>gets the results</li>
 <li>catch errors and detect quota limits</li>
-<li>return to ProxAPI by calling <em>proxy_callback</em> with the following arguments:<ul>
+<li>returns to ProxAPI by calling <em>handleResults</em> with the following arguments:<ul>
 <li><em>err</em> : errors not associated to usage limitations</li>
 <li><em>results</em> : API request results</li>
-<li><em>proxapi_status</em> : information about the request, you must set at least <em>proxapi_status.quota</em> boolean value ( <em>true</em> if the request failed due to usage limitations, <em>false</em> if there wasn't any quota error).</li>
+<li><em>proxapiStatus</em> : information about the request, you must set at least <em>proxapiStatus.quota</em> boolean value ( <em>true</em> if the request failed due to usage limitations, <em>false</em> if there wasn't any quota error).</li>
 </ul>
 </li>
 </ul>
@@ -147,34 +147,7 @@
 
         <tr>
             
-                <td class="name"><code>strategy</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Strategy to apply when a quota limit is reached. Possible values : </p>
-<ul>
-<li>&quot;retry&quot; : wait for the end of the limited period and retry</li>
-<li>&quot;abort&quot; : abort the request and return an informative error message</li>
-</ul></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>retry_delay</code></td>
+                <td class="name"><code>retryDelay</code></td>
             
 
             <td class="type">
@@ -250,7 +223,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line38">line 38</a>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -298,7 +271,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="retry_delay"><span class="type-signature"></span>retry_delay<span class="type-signature"> :integer</span></h4>
+    <h4 class="name" id="retryDelay"><span class="type-signature"></span>retryDelay<span class="type-signature"> :integer</span></h4>
 
     
 </dt>
@@ -349,7 +322,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line47">line 47</a>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
@@ -375,7 +348,7 @@
         <dl>
             
 <dt>
-    <h4 class="name" id="call"><span class="type-signature"></span>call<span class="signature">(callback, eventsCallback<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="call"><span class="type-signature"></span>call<span class="signature">(params, options, onEnd)</span><span class="type-signature"></span></h4>
 
     
 </dt>
@@ -383,7 +356,269 @@
 
     
     <div class="description">
-        <p>Calls the API and apply the strategy defined at the ProxAPI initialization if it encounter a quota limit.<br>Calls the <em>eventsCallback</em> method if provided to notice when such cases occur.<br>Finally calls the <em>callback</em> function whith the API results</p>
+        <p>Calls the API and apply a strategy if it encounter a quota limit.<br>Calls the <em>onEvent</em> method if provided to notice when such cases occur.<br>Finally calls the <em>onEnd</em> function whith the API results</p>
+    </div>
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Parameters needed by the API calling function. The  <em>translate</em> function is called with this same object.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Options</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>strategy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Strategy to apply when a quota limit is reached. Possible values : </p>
+<ul>
+<li>&quot;retry&quot; : wait for the end of the limited period and retry</li>
+<li>&quot;abort&quot; : abort the request and return an informative error message</li>
+</ul></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onEvent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ProxAPI.html#onEvent">ProxAPI~onEvent</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Callback function called each time an event occurs</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ProxAPI.html#onEnd">ProxAPI~onEnd</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Callback function called after the API call has been made</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line59">line 59</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="callUntil"><span class="type-signature"></span>callUntil<span class="signature">(untilSettings, params, options, onEnd, results<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>callUntil</p>
     </div>
     
 
@@ -419,13 +654,297 @@
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
+                <td class="name"><code>untilSettings</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="ProxAPI.html#callback">ProxAPI~callback</a></span>
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Settings for calling the API recursively</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>newParams</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ProxAPI.html#newParams">ProxAPI~newParams</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Callback calculating the new parameters for the next API call</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>aggregate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ProxAPI.html#aggregate">ProxAPI~aggregate</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Callback aggregating results of successives API calls</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>endCondition</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ProxAPI.html#endCondition">ProxAPI~endCondition</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Callback deciding if more API calls are needed</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>params</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Parameters needed by the API calling function. The  <em>translate</em> function is called with this same object.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Options</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>strategy</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Strategy to apply when a quota limit is reached. Possible values : </p>
+<ul>
+<li>&quot;retry&quot; : wait for the end of the limited period and retry</li>
+<li>&quot;abort&quot; : abort the request and return an informative error message</li>
+</ul></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onEvent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ProxAPI.html#onEvent">ProxAPI~onEvent</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Callback function called each time an event occurs</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onEnd</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="ProxAPI.html#onEnd">ProxAPI~onEnd</a></span>
 
 
             
@@ -450,13 +969,13 @@
 
         <tr>
             
-                <td class="name"><code>eventsCallback</code></td>
+                <td class="name"><code>results</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="ProxAPI.html#eventsCallback">ProxAPI~eventsCallback</a></span>
+<span class="param-type">object</span>
 
 
             
@@ -476,7 +995,7 @@
 
             
 
-            <td class="description last"><p>Callback function called each time an event occurs</p></td>
+            <td class="description last"><p>results from preceding API calls to aggregate</p></td>
         </tr>
 
     
@@ -507,7 +1026,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line58">line 58</a>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line113">line 113</a>
     </li></ul></dd>
     
 
@@ -578,7 +1097,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line102">line 102</a>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line153">line 153</a>
     </li></ul></dd>
     
 
@@ -685,7 +1204,7 @@
 
         <tr>
             
-                <td class="name"><code>retry_delay</code></td>
+                <td class="name"><code>retryDelay</code></td>
             
 
             <td class="type">
@@ -729,7 +1248,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line108">line 108</a>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line159">line 159</a>
     </li></ul></dd>
     
 
@@ -749,7 +1268,487 @@
             
                 
 <dt>
-    <h4 class="name" id="callback"><span class="type-signature"></span>callback<span class="signature">(error, data)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="aggregate"><span class="type-signature"></span>aggregate<span class="signature">(results, data)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>results</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>results from preceding API calls</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>API request results</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line134">line 134</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>results - Aggregated results</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+            
+                
+<dt>
+    <h4 class="name" id="endCondition"><span class="type-signature"></span>endCondition<span class="signature">(error, data)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>API request error</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>API request results</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line141">line 141</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>stop - True if all results have been fetched, False if more API calls are needed</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+            
+                
+<dt>
+    <h4 class="name" id="newParams"><span class="type-signature"></span>newParams<span class="signature">(error, data)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>API request error</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>API request results</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line127">line 127</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <p>params - Parameters used for the next API call</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+            
+                
+<dt>
+    <h4 class="name" id="onEnd"><span class="type-signature"></span>onEnd<span class="signature">(error, data)</span><span class="type-signature"></span></h4>
 
     
 </dt>
@@ -857,7 +1856,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line84">line 84</a>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -887,7 +1886,7 @@
             
                 
 <dt>
-    <h4 class="name" id="eventsCallback"><span class="type-signature"></span>eventsCallback<span class="signature">(eventName, data)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="onEvent"><span class="type-signature"></span>onEvent<span class="signature">(eventName, data)</span><span class="type-signature"></span></h4>
 
     
 </dt>
@@ -995,7 +1994,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line90">line 90</a>
+        <a href="proxapi.js.html">proxapi.js</a>, <a href="proxapi.js.html#line91">line 91</a>
     </li></ul></dd>
     
 
@@ -1042,7 +2041,7 @@
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Sun Sep 14 2014 15:33:29 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Thu Sep 18 2014 11:57:23 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
