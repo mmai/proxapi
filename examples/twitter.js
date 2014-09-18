@@ -9,7 +9,6 @@ var twit = new Twit(credentials);
 var ProxAPI = require("../proxapi.js");
 
 var twitterProxy = new ProxAPI({
-  strategy: 'retry',
   retryDelay: 60*5,
   translate: function(params, handleResults){
     twit.get("followers/list", {screen_name: params.twitter_account, count: 50, cursor: params.cursor}, function (err, data, response) {
@@ -26,47 +25,35 @@ var twitterProxy = new ProxAPI({
   }
 });
 
-var showEvents = function(eventName, data){
-  if (eventName === "retrying"){
-    console.log(data);
+var params = {
+  twitter_account: "mmai",
+  cursor: -1
+};
+
+var options = {
+  strategy: "retry",
+  onEvent: function(eventName, data){
+    if (eventName === "retrying"){
+      console.log(data);
+    }
   }
 };
 
-function getFollowers(twitterAccount, cursor){
-  cursor = cursor || -1;
-  console.log('Fetching twitter cursor ' + cursor);
-  var deferred = Q.defer();
-  var params = {
-    twitter_account: twitterAccount,
-    cursor: cursor
+var callSettings = {
+  endCondition: function(err, data){
+    return (data.next_cursor_str == '0');
+  },
+  newParams: function(error, data, params){
+    return {
+      twitter_account: params.twitter_account,
+      cursor: data.next_cursor_str
+    };
+  },
+  aggregate: function(acc, res){
+    return acc.concat(res.users);
   }
+};
 
-  twitterProxy.call(params, function(err, data){
-      if (err) {
-        deferred.reject(err);
-      } else {
-        if (data.next_cursor_str == '0'){
-          //All result pages have been fetched
-          deferred.resolve(data.users);
-        } else {
-          //There are more result pages to fetch
-          getFollowers(twitterAccount, data.next_cursor_str)
-          .fail(deferred.reject)
-          .progress(function(data){ console.log(data.message); })
-          .then(function(users){
-              deferred.resolve(data.users.concat(users));
-            });
-        }
-      }
-    }, showEvents);
-
-  return deferred.promise;
-}
-
-getFollowers("mmai")
-    .fail(function(error){ console.log(error); })
-    .progress(function(data){ console.log(data.message); })
-    .then(function(followers){
-      console.log("Total followers: " + followers.length);
-    })
-    .done();
+twitterProxy.callUntil(params, options, function(err, data){
+    console.log("Total followers: " + data.length);
+}, callSettings);

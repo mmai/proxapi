@@ -1,6 +1,6 @@
 {
   "name": "proxapi",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Act as a proxy client to handle webservices API usage limitations",
   "main": "index.js",
   "scripts": {

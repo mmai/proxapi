@@ -97,6 +97,10 @@ ProxAPI.prototype.call = function(params, options, onEnd){
  /**
   * callUntil
   *
+  * @param {object} untilSettings - Settings for calling the API recursively
+  * @param {ProxAPI~newParams} untilSettings.newParams - Callback calculating the new parameters for the next API call
+  * @param {ProxAPI~aggregate} untilSettings.aggregate - Callback aggregating results of successives API calls
+  * @param {ProxAPI~endCondition} untilSettings.endCondition - Callback deciding if more API calls are needed
   * @param {object} params - Parameters needed by the API calling function. The  _translate_ function is called with this same object.
   * @param {object} options - Options
   * @param {string} [options.strategy] - Strategy to apply when a quota limit is reached. Possible values : 
@@ -104,22 +108,18 @@ ProxAPI.prototype.call = function(params, options, onEnd){
   *   * "abort" : abort the request and return an informative error message
   * @param {ProxAPI~onEvent} [options.onEvent] - Callback function called each time an event occurs
   * @param {ProxAPI~onEnd} onEnd - Callback function called after the API call has been made
-  * @param {object} callSettings - Settings for calling the API recursively
-  * @param {ProxAPI~newParams} callSettings.newParams - Callback calculating the new parameters for the next API call
-  * @param {ProxAPI~aggregate} callSettings.aggregate - Callback aggregating results of successives API calls
-  * @param {ProxAPI~endCondition} callSettings.endCondition - Callback deciding if more API calls are needed
   * @param {object} [results] - results from preceding API calls to aggregate
   */
- ProxAPI.prototype.callUntil = function(params, options, onEnd, callSettings, results){
+ ProxAPI.prototype.callUntil = function(untilSettings, params, options, onEnd, results){
    var self = this;
    results = results || [];
    this.call(params, options, function(err, data){
-     results = callSettings.aggregate(results, data);
-     params = callSettings.newParams(err, data, params);
-     if (callSettings.endCondition(err, data)){
+     results = untilSettings.aggregate(results, data);
+     params = untilSettings.newParams(err, data, params);
+     if (untilSettings.endCondition(err, data)){
        onEnd(err, results);
      } else {
-       self.callUntil(params, options, onEnd, callSettings, results);
+       self.callUntil(untilSettings, params, options, onEnd, results);
      }
    });
  };

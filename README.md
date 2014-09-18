@@ -11,9 +11,9 @@ var ProxAPI = require("proxapi");
 var proxApi = new ProxAPI(settings);
 ```
 
-In the browser, include the file [proxapi-0.4.0.min.js](http://mmai.github.io/proxapi/dist/proxapi-0.4.0.min.js)
+In the browser, include the file [proxapi-0.4.1.min.js](http://mmai.github.io/proxapi/dist/proxapi-0.4.1.min.js)
 ```html
-<script src="proxapi-0.4.0.min.js"></script>
+<script src="proxapi-0.4.1.min.js"></script>
 <script type="text/javascript">
   var proxApi = new ProxAPI(settings);
 </script>

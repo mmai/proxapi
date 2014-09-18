@@ -168,26 +168,29 @@ describe('ProxAPI', function(){
               retryDelay: 2
             });
 
-          var endCondition = function(error, data){
-            return data.nextpage === -1;
-          }; 
-
-          var newParams = function(error, data, params){
-            return {
-              name: params.name,
-              page: data.nextpage
-            };
-          };
-          
-          var aggregate = function(acc, res){
-            return acc.concat([res.info]);
+          var untilSettings = {
+            endCondition: function(error, data){
+              return data.nextpage === -1;
+            }, 
+            newParams: function(error, data, params){
+              return {
+                name: params.name,
+                page: data.nextpage
+              };
+            },
+            aggregate: function(acc, res){
+              return acc.concat([res.info]);
+            }
           };
 
           var params = {name: "john", page:0};
-          apiProxy.callUntil(params, {strategy:"retry"}, function(error, data){
+
+          var options = {strategy:"retry"};
+
+          apiProxy.callUntil(untilSettings, params, options, function(error, data){
               expect(data).to.deep.equal(["a", "b", "c", "d"]);
               done();
-            }, {newParams: newParams, aggregate: aggregate, endCondition: endCondition });
+            });
         });
     });
 });
