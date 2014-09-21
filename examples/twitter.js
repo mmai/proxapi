@@ -1,6 +1,5 @@
 'use strict';
 
-var Q = require('q');
 var credentials = require('./twitter_credentials.js');
 
 var Twit = require('twit');

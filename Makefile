@@ -1,7 +1,7 @@
 VERSION = $(shell node -e 'console.log(require("./package.json").version)')
 
 browser:
-	browserify proxapi.js > dist/proxapi.js
+	browserify proxapi.js --standalone ProxAPI > dist/proxapi.js
 dist: browser
 	cp dist/proxapi.js dist/proxapi-$(VERSION).js
 	uglifyjs dist/proxapi.js > dist/proxapi-$(VERSION).min.js
