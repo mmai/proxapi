@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title></title>
+    <!--Register Jquery-->
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.1.0.js"></script>
+    <!--Register Google Api-->
+    <!-- <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>   -->
+    <!--Register YUI Api-->
+    <script type="text/javascript" src="http://yui.yahooapis.com/3.3.0/build/yui/yui-min.js"></script>
+  </head>
+  <body>
+    <div id="twitterlogin">Twitter login</div>
+    <script type="text/javascript">
+    YUI({
+        combine: false,
+        filter: "raw",
+        debug: false,
+        modules: {
+            
+            'Twitter': {
+               fullpath: 'js/twitter.js'
+            },
+            'myYQL': {
+                fullpath: 'js/yql.js',
+                requires: ['jsonp', 'jsonp-url']
+            }
+        }
+    }).use('Twitter', 'gallery-storage-lite', 'myYQL', 'node', "event", function (Y) {
+
+      var twtBtn = Y.one('#twitterlogin');
+       
+      twtBtn.on('click', function (e) {
+          Y.Twitter.call({ type: "request_token" }, function (tokens) {
+              Y.log("step 1");
+              Y.log(tokens);
+              Y.StorageLite.setItem('oauth_token', tokens.oauth_token);
+              Y.StorageLite.setItem('oauth_token_secret', tokens.oauth_token_secret);
+              window.setTimeout(function () {
+                  window.location = "https://twitter.com/oauth/authenticate?oauth_token=" + tokens.oauth_token + "&oauth_token_secret=" + tokens.oauth_token_secret;
+              }, 10);
+          });
+      });
+
+      if (getQueryStringParameter('oauth_token')) {
+        Y.StorageLite.setItem('oauth_token', getQueryStringParameter('oauth_token'));
+        Y.StorageLite.setItem('oauth_verifier', getQueryStringParameter('oauth_verifier'));
+
+        Y.Twitter.config({
+            oauth_token: getQueryStringParameter('oauth_token'),
+            oauth_token_secret: getQueryStringParameter('oauth_token_secret')
+        });
+
+        Y.Twitter.call({ type: "access_token" }, function (tokens) {
+            Y.Twitter.config({
+                oauth_token: tokens.oauth_token,
+                oauth_token_secret: tokens.oauth_token_secret
+            });
+
+            Y.Twitter.call({ type: "credentials" }, function (user) {
+                Y.Twitter.config({
+                    screen_name: user.screen_name,
+                    user_id: user.id
+                });
+
+                //Do Stuff
+                console.log(user);
+                //You have access to user id, name, screenname, description, etc.
+                //For more info visit https://dev.twitter.com/docs/api/1.1/get/account/verify_credentials 
+           });
+        });
+      }
+    });
+
+    //Supporting function to parse the query string 
+    function getQueryStringParameter(key, queryString) {
+        
+        var queryString = queryString || window.location.href;
+        key = key.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regex = new RegExp("[\\?&]" + key + "=([^&#]*)");
+        var qs = regex.exec(queryString);
+        if (qs)
+            return qs[1];
+        else
+            return false;
+    }
+    </script>
+
+  </body>
+</html>

@@ -53,6 +53,6 @@ var callSettings = {
   }
 };
 
-twitterProxy.callUntil(params, options, function(err, data){
+twitterProxy.callUntil(callSettings, params, options, function(err, data){
     console.log("Total followers: " + data.length);
-}, callSettings);
+});
